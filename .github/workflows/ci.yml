@@ -1,0 +1,22 @@
+# CI（§7.4 第一段）：lint + 無 GPU 單元測試。
+# replay/e2e 測試需要 GPU + NATS + vLLM，待 self-hosted runner 後掛入。
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: uv pip install --system pydantic nats-py pyyaml httpx pytest ruff
+      - name: Lint
+        run: ruff check .
+      - name: Unit tests
+        run: pytest tests/unit -q

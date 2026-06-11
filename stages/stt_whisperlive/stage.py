@@ -62,7 +62,9 @@ class SttWhisperLive(Stage):
             temperature=0.0,
             condition_on_previous_text=False,
             word_timestamps=words,
-            vad_filter=False,
+            # final（words=True）啟用 Silero VAD：截掉緩衝尾端靜音，防止 Whisper 對
+            # 無語音段產生幻覺文字；partial 為求延遲不開
+            vad_filter=words,
         )
         segs = list(segs)
         return segs, info, (time.perf_counter() - t0) * 1000

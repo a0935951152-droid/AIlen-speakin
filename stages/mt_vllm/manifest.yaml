@@ -1,0 +1,12 @@
+id: mt_vllm
+version: 0.1.0
+consumes: { event: segment.stt, states: [partial, final] }
+emits: { event: segment.mt }
+resources: { gpu_mb: 11000, note: "經 vLLM HTTP 服務，GPU 由 server 端佔用" }
+config_schema:
+  api_base:        { type: str,   default: "http://127.0.0.1:8001/v1" }
+  model:           { type: str,   default: "Qwen/Qwen2.5-7B-Instruct-AWQ" }
+  target_langs:    { type: list,  required: true, desc: "目標語言碼；等於 src_lang 的自動跳過" }
+  partial_min_gap_ms:    { type: int, default: 1000, desc: "同一 segment 兩次 partial 翻譯的最小間隔" }
+  partial_min_grow_chars: { type: int, default: 6,   desc: "partial 文字至少要長這麼多才重翻（防抖）" }
+  max_tokens:      { type: int,   default: 256 }

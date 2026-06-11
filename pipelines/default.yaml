@@ -1,8 +1,14 @@
 # 預設管線拓撲：stt → mt → tts（§6.2）
-# Phase 1 起 runner 讀此檔拉起各 stage；版本釘選 stage manifest 的 version
+# runner 讀此檔拉起各 stage；use 釘選 stage manifest 版本
+# 多語擴充看 §6.3：加語言 = 改 target_langs；TTS 多引擎 = route_by 路由表
 pipeline: default
 nodes:
   - { id: stt, use: stt_whisperlive@0.1 }
   - { id: mt,  use: mt_vllm@0.1, after: stt,
-      config: { target_langs: [en, ja] } }
-  - { id: tts, use: tts_cosyvoice2@0.1, after: mt }
+      config: {
+        api_base: "http://127.0.0.1:8001/v1",
+        model: breeze-7b-mt,
+        target_langs: [zh, en, ja],   # 等於 src_lang 的自動跳過
+      } }
+  # Phase 3 接入:
+  # - { id: tts, use: tts_cosyvoice2@0.1, after: mt }
