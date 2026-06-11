@@ -1,0 +1,18 @@
+[project]
+name = "speakin"
+version = "0.1.0"
+description = "SpeakIn — 多對多即時語音翻譯管線"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2",
+    "nats-py",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+# venv 在本機 NVMe（/home/a0935951152/speakin-venv），不在本 NFS 目錄下
+# 使用：uv pip install --python /home/a0935951152/speakin-venv/bin/python -e .

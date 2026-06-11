@@ -1,0 +1,313 @@
+{
+  "$defs": {
+    "ControlEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_ver": {
+          "default": "1.0",
+          "title": "Schema Ver",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "wall_ts": {
+          "format": "date-time",
+          "title": "Wall Ts",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "control.floor",
+            "control.presence",
+            "control.subs"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "session_id",
+        "event_type"
+      ],
+      "title": "ControlEvent",
+      "type": "object"
+    },
+    "SegmentEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_ver": {
+          "default": "1.0",
+          "title": "Schema Ver",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "wall_ts": {
+          "format": "date-time",
+          "title": "Wall Ts",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "segment.stt",
+            "segment.mt"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "speaker_id": {
+          "title": "Speaker Id",
+          "type": "string"
+        },
+        "segment_id": {
+          "description": "{speaker_id}-{單調遞增序號}，貫穿 stt→mt→tts",
+          "title": "Segment Id",
+          "type": "string"
+        },
+        "rev": {
+          "default": 0,
+          "description": "partial 修訂號，單調遞增；final 後不再變",
+          "minimum": 0,
+          "title": "Rev",
+          "type": "integer"
+        },
+        "state": {
+          "$ref": "#/$defs/SegmentState"
+        },
+        "t_start_ms": {
+          "minimum": 0,
+          "title": "T Start Ms",
+          "type": "integer"
+        },
+        "t_end_ms": {
+          "minimum": 0,
+          "title": "T End Ms",
+          "type": "integer"
+        },
+        "src_lang": {
+          "description": "講者原始語言 (BCP-47, 如 'zh')",
+          "title": "Src Lang",
+          "type": "string"
+        },
+        "lang": {
+          "description": "本事件 text 的語言；stt 事件 = src_lang",
+          "title": "Lang",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/Word"
+          },
+          "title": "Words",
+          "type": "array"
+        },
+        "conf": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Conf"
+        },
+        "trace": {
+          "items": {
+            "$ref": "#/$defs/TraceEntry"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "meta": {
+          "additionalProperties": true,
+          "description": "客製 stage 擴充欄位",
+          "title": "Meta",
+          "type": "object"
+        }
+      },
+      "required": [
+        "session_id",
+        "event_type",
+        "speaker_id",
+        "segment_id",
+        "state",
+        "t_start_ms",
+        "t_end_ms",
+        "src_lang",
+        "lang",
+        "text"
+      ],
+      "title": "SegmentEvent",
+      "type": "object"
+    },
+    "SegmentState": {
+      "enum": [
+        "partial",
+        "final"
+      ],
+      "title": "SegmentState",
+      "type": "string"
+    },
+    "TraceEntry": {
+      "additionalProperties": true,
+      "description": "延遲遙測：事件流經的每個 stage 追加一筆。",
+      "properties": {
+        "stage": {
+          "description": "stage 識別與版本，如 'stt_whisperlive@1.3.0'",
+          "title": "Stage",
+          "type": "string"
+        },
+        "ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "本 stage 處理耗時 (ms)",
+          "title": "Ms"
+        }
+      },
+      "required": [
+        "stage"
+      ],
+      "title": "TraceEntry",
+      "type": "object"
+    },
+    "TtsMetaEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_ver": {
+          "default": "1.0",
+          "title": "Schema Ver",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "wall_ts": {
+          "format": "date-time",
+          "title": "Wall Ts",
+          "type": "string"
+        },
+        "event_type": {
+          "const": "segment.tts",
+          "default": "segment.tts",
+          "title": "Event Type",
+          "type": "string"
+        },
+        "speaker_id": {
+          "title": "Speaker Id",
+          "type": "string"
+        },
+        "segment_id": {
+          "description": "與來源 segment 同 ID，跨模態對齊的關鍵",
+          "title": "Segment Id",
+          "type": "string"
+        },
+        "lang": {
+          "title": "Lang",
+          "type": "string"
+        },
+        "track_id": {
+          "description": "對應的 LiveKit 音軌 ID",
+          "title": "Track Id",
+          "type": "string"
+        },
+        "audio_t0_ms": {
+          "description": "此段音訊在該音軌上的起點",
+          "minimum": 0,
+          "title": "Audio T0 Ms",
+          "type": "integer"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "trace": {
+          "items": {
+            "$ref": "#/$defs/TraceEntry"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "meta": {
+          "additionalProperties": true,
+          "title": "Meta",
+          "type": "object"
+        }
+      },
+      "required": [
+        "session_id",
+        "speaker_id",
+        "segment_id",
+        "lang",
+        "track_id",
+        "audio_t0_ms",
+        "duration_ms"
+      ],
+      "title": "TtsMetaEvent",
+      "type": "object"
+    },
+    "Word": {
+      "description": "詞級時間戳，供字幕逐字上屏與跨模態對齊。",
+      "properties": {
+        "w": {
+          "title": "W",
+          "type": "string"
+        },
+        "t0": {
+          "description": "相對 session 起點的開始時間 (ms)",
+          "title": "T0",
+          "type": "integer"
+        },
+        "t1": {
+          "description": "相對 session 起點的結束時間 (ms)",
+          "title": "T1",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "w",
+        "t0",
+        "t1"
+      ],
+      "title": "Word",
+      "type": "object"
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/SegmentEvent"
+    },
+    {
+      "$ref": "#/$defs/TtsMetaEvent"
+    },
+    {
+      "$ref": "#/$defs/ControlEvent"
+    }
+  ],
+  "$comment": "SpeakIn event schema v1.0; generated from schemas/events.py"
+}

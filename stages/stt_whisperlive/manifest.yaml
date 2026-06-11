@@ -1,0 +1,17 @@
+id: stt_whisperlive
+version: 0.1.0
+consumes: null            # 源頭 stage：音訊直入（Phase 1 檔案回放；Phase 4 換 LiveKit 音軌）
+emits: segment.stt
+resources: { gpu_mb: 3500, replicas_per: active_speakers }
+config_schema:
+  source:               { type: str,   required: true,  desc: "音訊來源（wav/任意 ffmpeg 可解格式）" }
+  speaker_id:           { type: str,   default: spk_dev }
+  language:             { type: str,   default: null,   desc: "null = 自動偵測" }
+  model:                { type: str,   default: large-v3-turbo }
+  device:               { type: str,   default: cuda }
+  compute_type:         { type: str,   default: int8_float16 }
+  pace:                 { type: float, default: 1.0,    desc: "1.0 = 實時回放; 0 = 全速（離線測試）" }
+  chunk_ms:             { type: int,   default: 500 }
+  partial_interval_ms:  { type: int,   default: 1000 }
+  silence_ms:           { type: int,   default: 600,    desc: "尾端靜音 ≥ 此值視為句末" }
+  max_utterance_s:      { type: float, default: 20 }
