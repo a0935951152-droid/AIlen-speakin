@@ -14,9 +14,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
+      # 不用 --system：runner 系統 Python 受 PEP 668 externally-managed 保護會拒裝
       - name: Install deps
-        run: uv pip install --system pydantic nats-py pyyaml httpx pytest ruff
+        run: |
+          uv venv
+          uv pip install pydantic nats-py pyyaml httpx numpy pytest ruff
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
       - name: Unit tests
-        run: pytest tests/unit -q
+        run: uv run pytest tests/unit -q
