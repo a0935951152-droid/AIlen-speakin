@@ -21,20 +21,20 @@ def _stt() -> SttWhisperLive:
 
 
 def test_empty_final_after_partials_emits_tombstone():
-    ev = _stt()._event([], None, buf_off=0, buf_len=16000, seq=3, rev=2,
+    ev = _stt()._event([], None, "spk", buf_off=0, buf_len=16000, seq=3, rev=2,
                        state=SegmentState.FINAL, ms=1.0)
     assert ev is not None and ev.state is SegmentState.FINAL
     assert ev.text == "" and ev.segment_id == "spk-000003"
 
 
 def test_empty_final_without_partials_stays_silent():
-    ev = _stt()._event([], None, buf_off=0, buf_len=16000, seq=0, rev=0,
+    ev = _stt()._event([], None, "spk", buf_off=0, buf_len=16000, seq=0, rev=0,
                        state=SegmentState.FINAL, ms=1.0)
     assert ev is None
 
 
 def test_empty_partial_never_published():
-    ev = _stt()._event([], None, buf_off=0, buf_len=16000, seq=0, rev=5,
+    ev = _stt()._event([], None, "spk", buf_off=0, buf_len=16000, seq=0, rev=5,
                        state=SegmentState.PARTIAL, ms=1.0)
     assert ev is None
 

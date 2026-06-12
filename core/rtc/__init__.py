@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import numpy as np
 from livekit import api, rtc
 
@@ -35,14 +37,33 @@ class AudioTrackHandle:
         self.pushed_ms += len(i16) / self.sample_rate * 1000
 
 
+class RemoteAudioStream:
+    """訂閱到的單一遠端音軌（講者即音軌：identity 即 speaker_id 來源）。"""
+
+    def __init__(self, track: rtc.RemoteTrack, identity: str, name: str):
+        self._track = track
+        self.identity = identity   # 發布者 participant identity
+        self.name = name           # 音軌名；`tts.` 開頭為本系統譯音軌
+
+    async def frames(self, sample_rate: int = 16000):
+        """逐框產出 float32 mono [-1,1]（SDK 端重採樣）；軌結束時迭代自然結束。"""
+        async for fev in rtc.AudioStream(self._track, sample_rate=sample_rate,
+                                         num_channels=1):
+            i16 = np.frombuffer(fev.frame.data, dtype=np.int16)
+            yield i16.astype(np.float32) / 32768.0
+
+
 class RtcRoom:
-    """以單一參與者身分連入房間並發布音軌（TTS worker = 虛擬參與者）。"""
+    """以單一參與者身分連入房間；可發布音軌（TTS worker = 虛擬參與者），
+    或以 subscribe_audio=True 訂閱房內音軌（STT ingress）。"""
 
     def __init__(self, url: str, api_key: str, api_secret: str,
-                 room: str, identity: str):
+                 room: str, identity: str, subscribe_audio: bool = False):
         self._url, self._key, self._secret = url, api_key, api_secret
         self._room_name, self._identity = room, identity
         self._room: rtc.Room | None = None
+        self._audio_q: asyncio.Queue[RemoteAudioStream | None] | None = (
+            asyncio.Queue() if subscribe_audio else None)
 
     async def connect(self) -> None:
         token = (api.AccessToken(self._key, self._secret)
@@ -50,8 +71,24 @@ class RtcRoom:
                  .with_grants(api.VideoGrants(room_join=True, room=self._room_name))
                  .to_jwt())
         self._room = rtc.Room()
+        if self._audio_q is not None:
+            @self._room.on("track_subscribed")
+            def _on_track(track, pub, participant) -> None:
+                if track.kind == rtc.TrackKind.KIND_AUDIO:
+                    self._audio_q.put_nowait(RemoteAudioStream(
+                        track, participant.identity, pub.name))
         await self._room.connect(self._url, token,
-                                 options=rtc.RoomOptions(auto_subscribe=False))
+                                 options=rtc.RoomOptions(
+                                     auto_subscribe=self._audio_q is not None))
+
+    async def incoming_audio(self):
+        """房內每有音軌訂上就產出一個 RemoteAudioStream；close() 後結束。"""
+        assert self._audio_q is not None, "需以 subscribe_audio=True 建立"
+        while True:
+            stream = await self._audio_q.get()
+            if stream is None:
+                return
+            yield stream
 
     async def publish_audio_track(self, name: str, sample_rate: int) -> AudioTrackHandle:
         assert self._room, "RtcRoom 未連線"
@@ -62,6 +99,8 @@ class RtcRoom:
         return AudioTrackHandle(source, pub.sid, sample_rate)
 
     async def close(self) -> None:
+        if self._audio_q is not None:
+            self._audio_q.put_nowait(None)
         if self._room:
             await self._room.disconnect()
             self._room = None

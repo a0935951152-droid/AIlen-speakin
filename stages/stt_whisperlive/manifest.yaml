@@ -1,11 +1,13 @@
 id: stt_whisperlive
 version: 0.1.0
-consumes: null            # 源頭 stage：音訊直入（Phase 1 檔案回放；Phase 4 換 LiveKit 音軌）
+consumes: null            # 源頭 stage：音訊直入（檔案回放或 LiveKit mic ingress）
 emits: segment.stt
 resources: { gpu_mb: 3500, replicas_per: active_speakers }
 config_schema:
-  source:               { type: str,   required: true,  desc: "音訊來源（wav/任意 ffmpeg 可解格式）" }
-  speaker_id:           { type: str,   default: spk_dev }
+  source:               { type: str,   default: null,   desc: "音檔回放模式（wav/任意 ffmpeg 可解格式）；設了優先於 livekit" }
+  livekit:              { type: dict,  default: null,   desc: "{url, api_key, api_secret}：訂閱 room=session_id 講者音軌，一軌一 speaker_id（=參與者 identity）；音軌名 tts.* 跳過防回灌" }
+  speaker_id:           { type: str,   default: spk_dev, desc: "僅檔案回放模式用" }
+  gpu_concurrency:      { type: int,   default: 2,      desc: "跨講者轉寫並行上限" }
   language:             { type: str,   default: null,   desc: "null = 自動偵測" }
   model:                { type: str,   default: large-v3-turbo }
   device:               { type: str,   default: cuda }
