@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, Literal
 
@@ -73,7 +73,7 @@ class _EventBase(BaseModel):
 
     schema_ver: str = SCHEMA_VER
     session_id: str
-    wall_ts: datetime = Field(default_factory=datetime.utcnow)
+    wall_ts: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── SegmentEvent（§1.2：stt / mt 共用）────────────────────────────

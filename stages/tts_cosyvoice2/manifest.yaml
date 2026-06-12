@@ -1,0 +1,13 @@
+id: tts_cosyvoice2
+version: 0.1.0
+consumes: { event: segment.mt, states: [final] }   # §1.5-4：TTS 只消費 final
+emits: { event: segment.tts }
+resources: { gpu_mb: 4500, note: "CosyVoice2-0.5B fp16，與 vLLM/Whisper 共卡" }
+config_schema:
+  model_dir:  { type: str, default: "~/speakin-data/model-cache/cosyvoice2-0.5b" }
+  repo_dir:   { type: str, default: "~/speakin-data/CosyVoice", desc: "CosyVoice 程式碼（pip 不可裝，sys.path 引入）" }
+  prompt_wav: { type: str, default: "tests/replay/golden/zh_demo.wav", desc: "音色 prompt；Phase 4 改為講者本人音訊" }
+  out_dir:    { type: str, default: "~/speakin-data/tts-out", desc: "Phase 3 本地驗證輸出；Phase 4 改推 LiveKit 音軌" }
+  fp16:       { type: bool, default: true }
+  langs:          { type: list, desc: "只合成這些語言；route_by 注入，'*' = 萬用" }
+  langs_exclude:  { type: list, desc: "langs='*' 時要跳過的語言（已被其他路由接走）" }

@@ -41,8 +41,11 @@ curl -s localhost:8001/v1/models       # 確認 vLLM 就緒
 - `core/bus/` — NATS 封裝；`nats-py` 只准出現在這個模組。
 - `core/stage/` — `Stage` ABC（`setup`/`run`/`teardown`）與 `load_stage("name@ver")`，
   從 `stages/` 與 `plugins/` 找目錄（`manifest.yaml` + `stage.py` 的 `STAGE_CLASS`）。
-- `services/runner/` — 讀 pipeline YAML、注入 config、併發跑各節點；`route_by` 語法已保留
-  但未實作（Phase 3）。
+- `services/runner/` — 讀 pipeline YAML、注入 config、併發跑各節點；`route_by` 節點會
+  展開成多個 stage 實例（langs 注入 config，`*` 兜底拿 langs_exclude）。
+- `stages/tts_cosyvoice2/` — CosyVoice2 程式碼 pip 裝不了，clone 在
+  `~/speakin-data/CosyVoice`（stage 以 sys.path 引入）；venv 的 transformers 必須
+  釘 4.51.3（5.x 預設 bf16 載入會讓合成輸出整段壞掉）；zh 合成前必經 OpenCC t2s。
 
 事件流不變量（破壞它們會讓下游全錯）：
 

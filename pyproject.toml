@@ -18,6 +18,18 @@ dev = [
 stt = [
     "faster-whisper",   # 需要 GPU；CI 不裝
 ]
+# CosyVoice2 推理鏈（程式碼 pip 不可裝：clone 到 ~/speakin-data/CosyVoice，stage 以 sys.path 引入）。
+# transformers 必須 4.x：5.x 的 from_pretrained 預設載 bf16，CosyVoice LLM 前向 dtype 不匹配
+# 會讓合成輸出整段壞掉（症狀：音長 2-3 倍、內容不可辨）。
+# pyworld 無 cp312 wheel，需 CPATH 指向 ~/.local/pyhdrs（同 deploy/dev/vllm_mt.sh 的無 sudo 解法）。
+tts = [
+    "transformers==4.51.3",
+    "conformer", "diffusers", "hydra-core", "HyperPyYAML", "inflect", "librosa",
+    "omegaconf", "onnxruntime-gpu", "openai-whisper", "x-transformers", "wetext",
+    "lightning", "gdown", "wget", "matplotlib", "pyarrow", "pyworld", "modelscope",
+    "torchcodec",   # torchaudio 2.11+ 的 I/O 後端
+    "opencc",       # zh 合成前繁→簡（CosyVoice2 簡體語料為主，繁體輸入發音會壞）
+]
 
 [tool.ruff]
 line-length = 100

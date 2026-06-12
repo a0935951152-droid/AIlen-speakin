@@ -28,6 +28,35 @@ def parse_args():
     return p.parse_args()
 
 
+def expand_routes(node: dict) -> list[dict]:
+    """§6.3 route_by：把路由節點展開成多個普通節點，每路一個 stage 實例。
+
+    routes 鍵是 YAML 清單字面值（"[zh, ja]"）或 "*" 兜底。展開節點繼承共用
+    config 並注入 langs；兜底路由拿 langs="*" + langs_exclude=已被明示路由
+    接走的語言，因此不需要預知全語言集合——語言數始終是設定值，不是結構。
+    """
+    if node["route_by"] != "lang":
+        raise SystemExit(f"node '{node['id']}'：route_by 目前僅支援 lang")
+    base = dict(node.get("config") or {})
+    out: list[dict] = []
+    explicit: list[str] = []
+    wildcard_use = None
+    for key, use in node["routes"].items():
+        if key == "*":
+            wildcard_use = use
+            continue
+        langs = yaml.safe_load(key)
+        if not isinstance(langs, list):
+            raise SystemExit(f"node '{node['id']}' 路由鍵 '{key}'：須為 \"[lang, ...]\" 或 \"*\"")
+        explicit += langs
+        out.append({"id": f"{node['id']}:{'+'.join(langs)}", "use": use,
+                    "config": {**base, "langs": langs}})
+    if wildcard_use:
+        out.append({"id": f"{node['id']}:*", "use": wildcard_use,
+                    "config": {**base, "langs": "*", "langs_exclude": explicit}})
+    return out
+
+
 def apply_overrides(nodes: list[dict], overrides: list[str]) -> None:
     for item in overrides:
         target, _, val = item.partition("=")
@@ -54,16 +83,13 @@ async def amain() -> None:
         for node in nodes:
             if only and node["id"] not in only:
                 continue
-            if "route_by" in node:
-                # §6.3 路由語法已保留；Phase 3 TTS 接入時實作
-                raise NotImplementedError(
-                    f"node '{node['id']}' 使用 route_by：Phase 3 實作")
-            cls, mf = load_stage(node["use"])
-            st = cls(bus=bus, session_id=args.session,
-                     config=dict(node.get("config") or {}))
-            await st.setup()
-            insts.append(st)
-            print(f"[runner] node '{node['id']}' ← {mf.id}@{mf.version} 就緒")
+            for sub in expand_routes(node) if "route_by" in node else [node]:
+                cls, mf = load_stage(sub["use"])
+                st = cls(bus=bus, session_id=args.session,
+                         config=dict(sub.get("config") or {}))
+                await st.setup()
+                insts.append(st)
+                print(f"[runner] node '{sub['id']}' ← {mf.id}@{mf.version} 就緒")
         if not insts:
             raise SystemExit("沒有任何 node 被啟動（檢查 --nodes）")
         await asyncio.gather(*(s.run() for s in insts))

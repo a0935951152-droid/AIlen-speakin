@@ -10,5 +10,13 @@ nodes:
         model: breeze-7b-mt,
         target_langs: [zh, en, ja],   # 等於 src_lang 的自動跳過
       } }
-  # Phase 3 接入:
-  # - { id: tts, use: tts_cosyvoice2@0.1, after: mt }
+  # §6.3 路由表：runner 把 route_by 節點展開成多實例；加語言/換引擎只改這張表
+  - id: tts
+    route_by: lang
+    routes:
+      "[zh, en, ja]": tts_cosyvoice2@0.1
+      # "*": tts_mms@0.1   # 低資源語言兜底（Phase 6）
+    after: mt
+    config:
+      prompt_wav: tests/replay/golden/zh_demo.wav   # Phase 4 改為講者本人音訊
+      out_dir: ~/speakin-data/tts-out
