@@ -8,12 +8,27 @@ partial 防抖（§5 Phase 2）：同一 segment 的 partial 需間隔 ≥ parti
 from __future__ import annotations
 
 import asyncio
+import re
 import time
 
 import httpx
 
 from core.stage import Stage
 from schemas.events import SegmentEvent, SegmentState, TraceEntry, text_topic
+
+_CJK = re.compile(r"[一-鿿぀-ヿ가-힯]")
+
+
+def lang_guard_ok(text: str, tgt: str) -> bool:
+    """輸出語言護欄：破碎的 partial 輸入會讓模型偶爾原文照抄（如 zh→en 卻輸出中文）。
+    目標是 CJK 語言則輸出需含足量 CJK 字元，反之則不准超過三成。"""
+    if not text:
+        return False
+    cjk_ratio = len(_CJK.findall(text)) / len(text)
+    if tgt in ("zh", "ja", "ko"):
+        return cjk_ratio > 0.15
+    return cjk_ratio < 0.3
+
 
 _LANG_NAMES = {
     "zh": "Traditional Chinese", "en": "English", "ja": "Japanese",
@@ -58,6 +73,8 @@ class MtVllm(Stage):
         if ev.state is SegmentState.FINAL:
             self._seen.pop(ev.segment_id, None)
             return True
+        if len(ev.text) < 10:
+            return False  # 過短的 partial 多半是不穩定假設，不值得翻
         last_len, last_t = self._seen.get(ev.segment_id, (0, 0.0))
         now = time.monotonic()
         if now - last_t < self.min_gap or len(ev.text) - last_len < self.min_grow:
@@ -77,6 +94,13 @@ class MtVllm(Stage):
             except Exception as e:  # 單語言失敗不拖垮其他語言
                 print(f"[mt] {ev.segment_id}→{tgt} 失敗: {e}")
                 return
+            if not lang_guard_ok(out, tgt):
+                if ev.state is not SegmentState.FINAL:
+                    return  # partial 丟棄即可，下一個 rev 會再來
+                out = await self._translate(ev.text, ev.src_lang, tgt)  # final 重試一次
+                if not lang_guard_ok(out, tgt):
+                    print(f"[mt] {ev.segment_id}→{tgt} 語言護欄連續攔截，放棄此段")
+                    return
             ms = (time.perf_counter() - t0) * 1000
             mt_ev = ev.model_copy(update={
                 "event_type": "segment.mt",

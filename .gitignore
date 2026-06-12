@@ -4,3 +4,5 @@ __pycache__/
 models
 .claude/settings.local.json
 .disktest
+# 長錄音僅供本機手動測試，黃金音檔入庫以小檔為限
+tests/replay/golden/wanhua.wav
