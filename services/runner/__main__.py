@@ -91,7 +91,9 @@ async def amain() -> None:
                          config=dict(sub.get("config") or {}))
                 await st.setup()
                 insts.append(st)
-                print(f"[runner] node '{sub['id']}' ← {mf.id}@{mf.version} 就緒")
+                # flush：stdout 重導到檔案時是 block buffering，就緒訊息會卡在緩衝
+                print(f"[runner] node '{sub['id']}' ← {mf.id}@{mf.version} 就緒",
+                      flush=True)
         if not insts:
             raise SystemExit("沒有任何 node 被啟動（檢查 --nodes）")
         await asyncio.gather(*(s.run() for s in insts))
