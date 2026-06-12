@@ -49,8 +49,9 @@ curl -s localhost:8001/v1/models       # 確認 vLLM 就緒
 
 事件流不變量（破壞它們會讓下游全錯）：
 
-- 每段語音有遞增 `rev` 的 `partial` 事件，最後一個 `final` 收尾；下游以
-  `(speaker_id, segment_id)` upsert，舊 `rev` 與 final 後事件須拒收。
+- 每段語音有遞增 `rev` 的 `partial` 事件，最後一個 `final` 收尾（發過 partial 就
+  必有 final，文字可為空 = tombstone）；下游以 `(speaker_id, segment_id, lang)`
+  upsert，舊 `rev` 與 final 後事件須拒收。
 - `segment_id` 貫穿 stt→mt→tts；每個 stage 在 `trace` 追加自己的耗時。
 - TTS 只消費 `final`。翻譯每段每目標語言只做一次，與訂閱人數無關。
 - mt_vllm 有輸出語言護欄（`lang_guard_ok`）：擋模型對破碎 partial 原文照抄；改 prompt

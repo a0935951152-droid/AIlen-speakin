@@ -72,7 +72,9 @@ class SttWhisperLive(Stage):
     def _event(self, segs, info, buf_off: int, buf_len: int, seq: int, rev: int,
                state: SegmentState, ms: float) -> SegmentEvent | None:
         text = "".join(s.text for s in segs).strip()
-        if not text:
+        # 空文字但已發過 partial（多半是 VAD 截掉的幻覺假設）：仍要發空 final tombstone
+        # 收尾，否則 segment_id 會被下一句重用且 rev 歸零，下游依「rev 只往前」拒收整句
+        if not text and not (state is SegmentState.FINAL and rev > 0):
             return None
         base_ms = buf_off / SR * 1000
         words: list[Word] = []

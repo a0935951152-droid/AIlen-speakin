@@ -86,6 +86,13 @@ class MtVllm(Stage):
         if not isinstance(ev, SegmentEvent) or not self._should_translate(ev):
             return
         targets = [t for t in self.targets if t != ev.src_lang]
+        if not ev.text:
+            # 空 final tombstone：不翻譯，原樣轉發讓各語言平面也收尾（§1.5-1）
+            for tgt in targets:
+                await self.bus.publish(text_topic(self.session_id, tgt), ev.model_copy(
+                    update={"event_type": "segment.mt", "lang": tgt, "words": [], "conf": None,
+                            "trace": [*ev.trace, TraceEntry(stage=self.stage_tag, ms=0.0)]}))
+            return
 
         async def one(tgt: str) -> None:
             t0 = time.perf_counter()

@@ -75,6 +75,8 @@ class TtsCosyVoice2(Stage):
             return
         if ev.lang in self.exclude:
             return
+        if not ev.text:
+            return  # 空 final tombstone 只用於字幕收尾，無聲可合成
         import torchaudio
 
         t0 = time.perf_counter()

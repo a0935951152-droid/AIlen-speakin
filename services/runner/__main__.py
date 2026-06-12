@@ -63,7 +63,9 @@ def apply_overrides(nodes: list[dict], overrides: list[str]) -> None:
         node_id, _, key = target.partition(".")
         for node in nodes:
             if node["id"] == node_id:
-                node.setdefault("config", {})[key] = val
+                # YAML 解析值：讓 pace=0.5 / fp16=false / target_langs=[zh,en]
+                # 拿到 float/bool/list，而不是字串（字串照舊不受影響）
+                node.setdefault("config", {})[key] = yaml.safe_load(val)
                 break
         else:
             raise SystemExit(f"--set 指定的 node '{node_id}' 不在管線中")

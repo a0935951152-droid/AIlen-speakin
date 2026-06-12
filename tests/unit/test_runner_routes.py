@@ -43,3 +43,13 @@ def test_only_lang_routing_supported():
 def test_bad_route_key_rejected():
     with pytest.raises(SystemExit):
         expand_routes(_node({"zh": "a@1"}))  # 缺 [] 清單字面值
+
+
+def test_set_override_parses_yaml_types():
+    from services.runner.__main__ import apply_overrides
+
+    nodes = [{"id": "stt"}, {"id": "mt", "config": {"target_langs": ["zh"]}}]
+    apply_overrides(nodes, ["stt.pace=0.5", "stt.source=a.wav",
+                            "mt.target_langs=[zh, en]", "stt.fp16=false"])
+    assert nodes[0]["config"] == {"pace": 0.5, "source": "a.wav", "fp16": False}
+    assert nodes[1]["config"]["target_langs"] == ["zh", "en"]

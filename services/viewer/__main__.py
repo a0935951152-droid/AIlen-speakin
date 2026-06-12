@@ -21,12 +21,14 @@ async def amain() -> None:
     p.add_argument("--nats", default="nats://127.0.0.1:4222")
     args = p.parse_args()
 
-    latest: dict[tuple[str, str], SegmentEvent] = {}
+    # key 含 lang：同一 segment 的多語言翻譯共用 segment_id（§1.5-4 對齊），
+    # 只用 (speaker, segment) 會讓不同語言互相覆寫/被先到的 final 擋掉
+    latest: dict[tuple[str, str, str], SegmentEvent] = {}
 
     async def on_event(subject: str, ev) -> None:
         if not isinstance(ev, SegmentEvent):
             return
-        key = (ev.speaker_id, ev.segment_id)
+        key = (ev.speaker_id, ev.segment_id, ev.lang)
         prev = latest.get(key)
         if prev and (prev.state is SegmentState.FINAL or prev.rev >= ev.rev):
             return  # upsert 規則：final 不可變、rev 只往前
