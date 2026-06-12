@@ -33,12 +33,14 @@ export interface TtsTrack {
 }
 
 export interface ConnectOptions {
-  /** gateway HTTP 位址，如 http://192.168.x.x:8800 */
+  /** gateway HTTP 位址，如 http://192.168.x.x:8800；同源代理時傳 location.origin */
   gateway: string;
   session: string;
   identity: string;
   /** WS 橋要的 topic 類別，預設 stt,text,control（字幕含原文） */
   topics?: string[];
+  /** 覆寫 LiveKit 信令位址（如同源代理 wss://host/lk）；未設用 gateway 回的 */
+  livekitUrl?: string;
 }
 
 type SegmentHandler = (ev: SegmentEvent, subject: string) => void;
@@ -92,7 +94,7 @@ export class SpeakInClient {
       this.tracks.delete(pub.trackSid);
       this.ttsHandlers.forEach((h) => h(t, false));
     });
-    await this.room.connect(livekit_url, token);
+    await this.room.connect(opts.livekitUrl ?? livekit_url, token);
 
     this.openEventsWs();
   }

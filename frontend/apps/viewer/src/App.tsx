@@ -19,7 +19,8 @@ export default function App() {
   const [micOn, setMicOn] = useState(false);
   const [listen, setListen] = useState(true);
 
-  const [gateway, setGateway] = useState(`http://${location.hostname}:8800`);
+  // 預設同源（vite 代理 /api、/ws、/lk）；直連 gateway 時自行改成 http://host:8800
+  const [gateway, setGateway] = useState(location.origin);
   const [session, setSession] = useState("ses_dev");
   const [identity, setIdentity] = useState(`spk_${Math.random().toString(36).slice(2, 6)}`);
 
@@ -27,7 +28,11 @@ export default function App() {
     setError("");
     const c = new SpeakInClient();
     try {
-      await c.connect({ gateway, session, identity });
+      // gateway 同源時 LiveKit 信令也走同源代理 /lk；媒體流仍是 WebRTC 直連
+      const livekitUrl = gateway === location.origin
+        ? `${location.origin.replace(/^http/, "ws")}/lk`
+        : undefined;
+      await c.connect({ gateway, session, identity, livekitUrl });
       setClient(c);
     } catch (e) {
       setError(String(e));
