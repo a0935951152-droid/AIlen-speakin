@@ -18,6 +18,18 @@ def tts_track_name(speaker_id: str, lang: str) -> str:
     return f"tts.{speaker_id}.{lang}"
 
 
+def create_access_token(api_key: str, api_secret: str, room: str, identity: str,
+                        ttl_s: int = 6 * 3600) -> str:
+    """簽發入房 token（gateway 發給瀏覽器用；secret 不出後端）。"""
+    from datetime import timedelta
+
+    return (api.AccessToken(api_key, api_secret)
+            .with_identity(identity)
+            .with_ttl(timedelta(seconds=ttl_s))
+            .with_grants(api.VideoGrants(room_join=True, room=room))
+            .to_jwt())
+
+
 class AudioTrackHandle:
     """單一已發布音軌。push() 逐塊餵 PCM 即時開播；pushed_ms 是軌上時間軸的游標，
     也就是下一段音訊的 audio_t0_ms（TtsMetaEvent §1.3）。"""

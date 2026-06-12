@@ -1,0 +1,14 @@
+{
+  "name": "speakin-frontend",
+  "private": true,
+  "workspaces": ["packages/*", "apps/viewer"],
+  "scripts": {
+    "dev": "npm run dev -w viewer",
+    "build": "npm run build -w viewer",
+    "typecheck": "tsc -p packages/sdk && tsc -p packages/ui && tsc -p apps/viewer",
+    "gen:types": "npm run gen:types -w @speakin/sdk"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

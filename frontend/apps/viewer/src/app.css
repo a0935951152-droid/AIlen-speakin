@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, "Noto Sans TC", sans-serif;
+}
+body { margin: 0; background: #101418; color: #e8edf2; }
+main { padding: 16px; }
+button { cursor: pointer; border: 1px solid #3a4654; background: #1c2530; color: inherit;
+  border-radius: 6px; padding: 6px 14px; font-size: 14px; }
+input, select { background: #1c2530; color: inherit; border: 1px solid #3a4654;
+  border-radius: 6px; padding: 6px 10px; font-size: 14px; }
+.error { color: #ff7b72; }
+
+/* 加入頁 */
+.join { max-width: 360px; margin: 12vh auto; display: flex; flex-direction: column; gap: 12px; }
+.join h1 { margin-bottom: 8px; }
+.join label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.join input { flex: 1; }
+.join button { padding: 10px; font-size: 16px; }
+
+/* 房間 */
+.room { display: flex; flex-direction: column; gap: 12px; height: calc(100vh - 32px); }
+.bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.bar .mic.on { background: #1f6f43; border-color: #2e9e61; }
+.bar .listen { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+
+/* 字幕牆：一講者一欄 */
+.captions-board { display: flex; gap: 16px; flex: 1; min-height: 0; }
+.captions-empty { flex: 1; display: grid; place-items: center; color: #5b6877; font-size: 18px; }
+.speaker-col { flex: 1; min-width: 0; display: flex; flex-direction: column;
+  background: #161d24; border: 1px solid #28323e; border-radius: 10px; padding: 12px; }
+.speaker-col h3 { margin: 0 0 8px; font-size: 14px; color: #7fd1ae; }
+.self-tag { color: #5b6877; font-weight: normal; }
+.speaker-scroll { overflow-y: auto; flex: 1; }
+.cap-final { margin: 0 0 10px; font-size: 20px; line-height: 1.5; }
+.cap-partial { margin: 0 0 10px; font-size: 20px; line-height: 1.5; opacity: 0.45;
+  font-style: italic; }
+
+.trace-footer { color: #5b6877; font-size: 12px; }
+.trace-footer strong { color: #7fa7d1; margin-left: 6px; }
+.tts-audio small { color: #5b6877; }

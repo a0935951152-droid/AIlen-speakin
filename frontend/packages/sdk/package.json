@@ -1,0 +1,17 @@
+{
+  "name": "@speakin/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "gen:types": "json2ts ../../../schemas/events.schema.json -o src/events.gen.ts --bannerComment '/* 由 schemas/events.schema.json 生成（npm run gen:types），勿手改 */'"
+  },
+  "dependencies": {
+    "livekit-client": "^2.7.0"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.0"
+  }
+}
