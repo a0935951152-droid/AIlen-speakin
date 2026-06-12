@@ -11,3 +11,4 @@ config_schema:
   fp16:       { type: bool, default: true }
   langs:          { type: list, desc: "只合成這些語言；route_by 注入，'*' = 萬用" }
   langs_exclude:  { type: list, desc: "langs='*' 時要跳過的語言（已被其他路由接走）" }
+  livekit:        { type: dict, desc: "{url, api_key, api_secret}：以虛擬參與者逐塊推 tts.{speaker}.{lang} 音軌（room=session_id）；未設退回落地模式" }

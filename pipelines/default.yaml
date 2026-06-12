@@ -20,3 +20,5 @@ nodes:
     config:
       prompt_wav: tests/replay/golden/zh_demo.wav   # Phase 4 改為講者本人音訊
       out_dir: ~/speakin-data/tts-out
+      # 虛擬參與者推軌（deploy/dev/livekit.sh，dev 金鑰僅內網）；--set tts.livekit=null 退回落地模式
+      livekit: { url: "ws://127.0.0.1:7880", api_key: devkey, api_secret: secret }
