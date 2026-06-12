@@ -31,6 +31,11 @@ tts = [
     "opencc",       # zh 合成前繁→簡（CosyVoice2 簡體語料為主，繁體輸入發音會壞）
 ]
 
+[tool.pytest.ini_options]
+# repo 根目錄入 sys.path：本機 python -m pytest 本來就會加，
+# 但 CI 的 uv run pytest 不會 → core/stages/services 找不到
+pythonpath = ["."]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
