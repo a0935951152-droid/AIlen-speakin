@@ -17,7 +17,7 @@ jobs:
       # 不用 --system：runner 系統 Python 受 PEP 668 externally-managed 保護會拒裝
       - name: Install deps
         run: |
-          uv venv
+          uv venv --clear   # setup-uv 設 python-version 時已預建 .venv
           uv pip install pydantic nats-py pyyaml httpx numpy pytest ruff
       - name: Lint
         run: uv run ruff check .
