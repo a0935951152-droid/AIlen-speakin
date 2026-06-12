@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">SpeakIn end-to-end architecture</title>
+  <desc id="desc">Complete system diagram for the SpeakIn multi-speaker, multi-language real-time speech translation pipeline.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#23312b"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#315f99"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1d6f57"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f8f5; }
+      .band { fill: #ffffff; stroke: #d8dfda; stroke-width: 1.5; }
+      .bandTitle { fill: #1d6f57; font: 700 18px Inter, system-ui, sans-serif; letter-spacing: 0; }
+      .title { fill: #18201d; font: 800 34px Inter, system-ui, sans-serif; }
+      .subtitle { fill: #5d6863; font: 16px Inter, system-ui, sans-serif; }
+      .node { fill: #ffffff; stroke: #9fb1a8; stroke-width: 1.6; rx: 8; }
+      .nodeBlue { fill: #e7eef7; stroke: #8ba9cf; stroke-width: 1.6; rx: 8; }
+      .nodeGreen { fill: #e6f1ec; stroke: #8ebca9; stroke-width: 1.6; rx: 8; }
+      .nodeAmber { fill: #f7eddc; stroke: #d2ad72; stroke-width: 1.6; rx: 8; }
+      .nodeDark { fill: #17201b; stroke: #4a5a52; stroke-width: 1.6; rx: 8; }
+      .label { fill: #18201d; font: 700 17px Inter, system-ui, sans-serif; }
+      .small { fill: #5d6863; font: 13px Inter, system-ui, sans-serif; }
+      .darkLabel { fill: #f1f5ef; font: 700 17px Inter, system-ui, sans-serif; }
+      .darkSmall { fill: #c4cec8; font: 13px Inter, system-ui, sans-serif; }
+      .pipe { fill: none; stroke: #23312b; stroke-width: 2.2; marker-end: url(#arrow); }
+      .pipeBlue { fill: none; stroke: #315f99; stroke-width: 2.2; marker-end: url(#arrowBlue); }
+      .pipeGreen { fill: none; stroke: #1d6f57; stroke-width: 2.2; marker-end: url(#arrowGreen); }
+      .pipeDash { fill: none; stroke: #67736d; stroke-width: 1.8; stroke-dasharray: 8 6; marker-end: url(#arrow); }
+      .topic { fill: #ffffff; stroke: #d8dfda; stroke-width: 1; rx: 6; }
+      .topicText { fill: #315f99; font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .legend { fill: #5d6863; font: 13px Inter, system-ui, sans-serif; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1040"/>
+  <text class="title" x="64" y="62">SpeakIn 多對多即時語音翻譯系統架構</text>
+  <text class="subtitle" x="64" y="91">N speakers × L languages × M devices; compute scales with active speakers and subscribed languages, distribution fans out through LiveKit / CDN.</text>
+
+  <rect class="band" x="50" y="125" width="1500" height="160" rx="12"/>
+  <text class="bandTitle" x="72" y="158">1. Input Plane：講者音訊進入</text>
+  <rect class="nodeGreen" x="78" y="184" width="170" height="66"/>
+  <text class="label" x="102" y="211">Speaker Devices</text>
+  <text class="small" x="102" y="232">browser / phone / mic</text>
+  <rect class="nodeBlue" x="315" y="184" width="190" height="66"/>
+  <text class="label" x="344" y="211">LiveKit Room</text>
+  <text class="small" x="344" y="232">one participant track per speaker</text>
+  <rect class="node" x="572" y="184" width="168" height="66"/>
+  <text class="label" x="600" y="211">RTC Ingress</text>
+  <text class="small" x="600" y="232">subscribe PCM frames</text>
+  <rect class="node" x="805" y="184" width="150" height="66"/>
+  <text class="label" x="844" y="211">VAD</text>
+  <text class="small" x="844" y="232">speech gating</text>
+  <rect class="nodeAmber" x="1020" y="184" width="210" height="66"/>
+  <text class="label" x="1060" y="211">STT Worker</text>
+  <text class="small" x="1060" y="232">WhisperLiveKit / Nemotron</text>
+  <rect class="node" x="1295" y="184" width="175" height="66"/>
+  <text class="label" x="1320" y="211">SA-ASR</text>
+  <text class="small" x="1320" y="232">shared mic, phase 6+</text>
+  <path class="pipeBlue" d="M248 217 H315"/>
+  <path class="pipeBlue" d="M505 217 H572"/>
+  <path class="pipe" d="M740 217 H805"/>
+  <path class="pipe" d="M955 217 H1020"/>
+  <path class="pipeDash" d="M1295 217 H1230"/>
+  <text class="small" x="270" y="205">WebRTC audio</text>
+  <text class="small" x="760" y="205">PCM</text>
+
+  <rect class="band" x="50" y="320" width="1500" height="205" rx="12"/>
+  <text class="bandTitle" x="72" y="353">2. Semantic Event Bus：唯一語意合約</text>
+  <rect class="nodeDark" x="500" y="374" width="600" height="100"/>
+  <text class="darkLabel" x="700" y="405">NATS / JetStream</text>
+  <text class="darkSmall" x="620" y="428">Segment Event Bus: schema v1.0, upsert by speaker_id + segment_id + lang</text>
+  <text class="darkSmall" x="651" y="450">durable final / tts / control; best-effort partial</text>
+  <rect class="topic" x="94" y="390" width="238" height="34"/>
+  <text class="topicText" x="113" y="412">speakin.{session}.stt.{speaker}</text>
+  <rect class="topic" x="94" y="438" width="238" height="34"/>
+  <text class="topicText" x="120" y="460">segment.stt partial/final</text>
+  <rect class="topic" x="1268" y="390" width="238" height="34"/>
+  <text class="topicText" x="1302" y="412">speakin.{session}.text.{lang}</text>
+  <rect class="topic" x="1268" y="438" width="238" height="34"/>
+  <text class="topicText" x="1314" y="460">speakin.{session}.control</text>
+  <path class="pipeGreen" d="M1125 250 C1125 298 800 300 800 374"/>
+  <path class="pipeGreen" d="M332 407 H500"/>
+  <path class="pipeGreen" d="M1100 407 H1268"/>
+
+  <rect class="band" x="50" y="560" width="1500" height="205" rx="12"/>
+  <text class="bandTitle" x="72" y="593">3. Processing Plane：可替換 stage 管線</text>
+  <rect class="nodeAmber" x="92" y="630" width="190" height="74"/>
+  <text class="label" x="125" y="657">MT Worker</text>
+  <text class="small" x="118" y="678">vLLM + Breeze/Qwen</text>
+  <rect class="node" x="332" y="630" width="190" height="74"/>
+  <text class="label" x="366" y="657">Glossary Stage</text>
+  <text class="small" x="365" y="678">plugin, stt → mt</text>
+  <rect class="nodeAmber" x="572" y="630" width="210" height="74"/>
+  <text class="label" x="615" y="657">TTS Worker</text>
+  <text class="small" x="610" y="678">CosyVoice2 / Kokoro</text>
+  <rect class="nodeBlue" x="832" y="630" width="210" height="74"/>
+  <text class="label" x="870" y="657">Route Table</text>
+  <text class="small" x="864" y="678">route_by lang / model</text>
+  <rect class="node" x="1092" y="630" width="190" height="74"/>
+  <text class="label" x="1128" y="657">Shadow Eval</text>
+  <text class="small" x="1128" y="678">A/B quality + latency</text>
+  <rect class="node" x="1332" y="630" width="170" height="74"/>
+  <text class="label" x="1360" y="657">Runner</text>
+  <text class="small" x="1353" y="678">YAML topology</text>
+  <path class="pipe" d="M640 474 C410 520 187 548 187 630"/>
+  <path class="pipeDash" d="M282 667 H332"/>
+  <path class="pipeDash" d="M522 667 H572"/>
+  <path class="pipe" d="M782 667 H832"/>
+  <path class="pipeDash" d="M1042 667 H1092"/>
+  <path class="pipeGreen" d="M677 630 C677 574 875 535 875 474"/>
+  <path class="pipeDash" d="M1417 630 C1417 566 1170 552 1038 474"/>
+  <text class="small" x="173" y="617">stt events</text>
+  <text class="small" x="658" y="617">tts meta</text>
+  <text class="small" x="1350" y="618">after / taps / routes</text>
+
+  <rect class="band" x="50" y="800" width="1500" height="170" rx="12"/>
+  <text class="bandTitle" x="72" y="833">4. Distribution, Control, Observability</text>
+  <rect class="nodeBlue" x="82" y="868" width="184" height="64"/>
+  <text class="label" x="126" y="894">Viewer</text>
+  <text class="small" x="113" y="915">字幕 + trace</text>
+  <rect class="nodeBlue" x="310" y="868" width="184" height="64"/>
+  <text class="label" x="346" y="894">Audience App</text>
+  <text class="small" x="342" y="915">language + headset</text>
+  <rect class="nodeBlue" x="538" y="868" width="184" height="64"/>
+  <text class="label" x="579" y="894">Stage Display</text>
+  <text class="small" x="575" y="915">projection captions</text>
+  <rect class="nodeBlue" x="766" y="868" width="184" height="64"/>
+  <text class="label" x="809" y="894">VR Overlay</text>
+  <text class="small" x="810" y="915">WebXR captions</text>
+  <rect class="nodeGreen" x="994" y="868" width="184" height="64"/>
+  <text class="label" x="1036" y="894">Gateway</text>
+  <text class="small" x="1022" y="915">REST / WS / webhook</text>
+  <rect class="nodeGreen" x="1222" y="852" width="140" height="92"/>
+  <text class="label" x="1248" y="879">Session</text>
+  <text class="label" x="1243" y="901">Manager</text>
+  <text class="small" x="1241" y="922">floor / subs</text>
+  <rect class="node" x="1406" y="852" width="112" height="92"/>
+  <text class="label" x="1435" y="879">Obs</text>
+  <text class="small" x="1423" y="901">Prom</text>
+  <text class="small" x="1422" y="922">Grafana</text>
+  <path class="pipeBlue" d="M800 474 C800 790 174 780 174 868"/>
+  <path class="pipeBlue" d="M800 474 C800 792 402 787 402 868"/>
+  <path class="pipeBlue" d="M800 474 C800 794 630 792 630 868"/>
+  <path class="pipeBlue" d="M800 474 C800 794 858 792 858 868"/>
+  <path class="pipeGreen" d="M677 704 C677 782 402 810 402 868"/>
+  <path class="pipeGreen" d="M677 704 C677 780 858 812 858 868"/>
+  <path class="pipe" d="M1100 424 C1200 514 1292 720 1292 852"/>
+  <path class="pipeGreen" d="M1292 852 C1292 742 1140 598 1100 424"/>
+  <path class="pipeDash" d="M1086 868 C1086 780 1282 746 1417 704"/>
+  <path class="pipeDash" d="M1462 852 C1462 742 1220 532 1030 474"/>
+  <text class="small" x="226" y="821">text partial/final</text>
+  <text class="small" x="472" y="827">LiveKit TTS audio tracks</text>
+  <text class="small" x="1320" y="792">control.floor / control.subs</text>
+
+  <rect class="topic" x="64" y="990" width="1472" height="30"/>
+  <text class="topicText" x="90" y="1010">Core invariant: STT, MT and TTS all preserve segment_id; TTS consumes final only; captions consume partial and final; custom data goes in meta.</text>
+
+  <g id="node-hotspots" opacity="0">
+    <rect data-node="speaker-devices" x="78" y="184" width="170" height="66" fill="#fff"/>
+    <rect data-node="livekit-room" x="315" y="184" width="190" height="66" fill="#fff"/>
+    <rect data-node="rtc-ingress" x="572" y="184" width="168" height="66" fill="#fff"/>
+    <rect data-node="vad" x="805" y="184" width="150" height="66" fill="#fff"/>
+    <rect data-node="stt-worker" x="1020" y="184" width="210" height="66" fill="#fff"/>
+    <rect data-node="sa-asr" x="1295" y="184" width="175" height="66" fill="#fff"/>
+    <rect data-node="event-bus" x="500" y="374" width="600" height="100" fill="#fff"/>
+    <rect data-node="stt-topic" x="94" y="390" width="238" height="82" fill="#fff"/>
+    <rect data-node="text-control-topics" x="1268" y="390" width="238" height="82" fill="#fff"/>
+    <rect data-node="mt-worker" x="92" y="630" width="190" height="74" fill="#fff"/>
+    <rect data-node="glossary-stage" x="332" y="630" width="190" height="74" fill="#fff"/>
+    <rect data-node="tts-worker" x="572" y="630" width="210" height="74" fill="#fff"/>
+    <rect data-node="route-table" x="832" y="630" width="210" height="74" fill="#fff"/>
+    <rect data-node="shadow-eval" x="1092" y="630" width="190" height="74" fill="#fff"/>
+    <rect data-node="runner" x="1332" y="630" width="170" height="74" fill="#fff"/>
+    <rect data-node="viewer" x="82" y="868" width="184" height="64" fill="#fff"/>
+    <rect data-node="audience-app" x="310" y="868" width="184" height="64" fill="#fff"/>
+    <rect data-node="stage-display" x="538" y="868" width="184" height="64" fill="#fff"/>
+    <rect data-node="vr-overlay" x="766" y="868" width="184" height="64" fill="#fff"/>
+    <rect data-node="gateway" x="994" y="868" width="184" height="64" fill="#fff"/>
+    <rect data-node="session-manager" x="1222" y="852" width="140" height="92" fill="#fff"/>
+    <rect data-node="observability" x="1406" y="852" width="112" height="92" fill="#fff"/>
+  </g>
+</svg>

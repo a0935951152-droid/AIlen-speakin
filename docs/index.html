@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SpeakIn Project Structure</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">SpeakIn</p>
+        <h1>多對多即時語音翻譯管線</h1>
+      </div>
+      <nav aria-label="Sections">
+        <a href="#architecture">架構</a>
+        <a href="#phases">Phase</a>
+        <a href="#structure">結構</a>
+        <a href="#todo">代辦</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="architecture">
+        <div class="heroText">
+          <p class="eyebrow">Segment Event Bus</p>
+          <h2>一條語意事件匯流排，連接所有輸入、模型與輸出端。</h2>
+          <p>
+            所有輸入端化約成事件，所有輸出端只是訂閱者。LiveKit 負責音軌扇出，
+            NATS 負責語意事件，stage 只依賴 schema。
+          </p>
+        </div>
+        <div class="metrics" aria-label="Project metrics">
+          <div><span>Phase</span><strong>4</strong><small>LiveKit 整合中</small></div>
+          <div><span>PoC</span><strong>2 x 3</strong><small>講者 x 語言</small></div>
+          <div><span>首聲</span><strong>1.17s</strong><small>final 到聽端首聲</small></div>
+        </div>
+      </section>
+
+      <section class="pipeline" aria-label="Pipeline">
+        <article>
+          <span>Input Plane</span>
+          <strong>LiveKit SFU</strong>
+          <p>講者一人一軌，音訊進 VAD 與 STT worker。</p>
+        </article>
+        <div class="arrow">→</div>
+        <article>
+          <span>Event Bus</span>
+          <strong>NATS</strong>
+          <p>`segment.stt`、`segment.mt`、`segment.tts` 與 control event。</p>
+        </article>
+        <div class="arrow">→</div>
+        <article>
+          <span>Processing</span>
+          <strong>STT / MT / TTS</strong>
+          <p>模型 stage 可替換，成本跟同時開口人數與訂閱語言數相關。</p>
+        </article>
+        <div class="arrow">→</div>
+        <article>
+          <span>Distribution</span>
+          <strong>Viewer / Headset / Apps</strong>
+          <p>字幕、譯音、講稿、大屏和外部應用皆為訂閱端。</p>
+        </article>
+      </section>
+
+      <section id="phases">
+        <div class="sectionHead">
+          <p class="eyebrow">Roadmap</p>
+          <h2>PoC 進度</h2>
+        </div>
+        <div class="phaseGrid">
+          <article class="done"><span>Phase 0</span><strong>環境與基線</strong><p>GPU、NATS、schema、語言護欄完成。</p></article>
+          <article class="done"><span>Phase 1</span><strong>STT → Bus</strong><p>串流 STT、partial/final、replay 測試完成。</p></article>
+          <article class="done"><span>Phase 2</span><strong>MT 平面</strong><p>vLLM 翻譯、防抖、單語失敗隔離完成。</p></article>
+          <article class="done"><span>Phase 3</span><strong>TTS 平面</strong><p>CosyVoice2 串流合成與 route_by 完成。</p></article>
+          <article class="active"><span>Phase 4</span><strong>LiveKit 整合</strong><p>已完成 TTS 發軌；下一步是 mic ingress、viewer 與 floor control。</p></article>
+          <article><span>Phase 5</span><strong>高扇出與插拔</strong><p>gateway、惰性 TTS、插件插入與壓測。</p></article>
+        </div>
+      </section>
+
+      <section id="structure">
+        <div class="sectionHead">
+          <p class="eyebrow">Monorepo</p>
+          <h2>專案結構</h2>
+        </div>
+        <section class="architectureExplorer" aria-label="Architecture explorer">
+          <div class="explorerHeader">
+            <div>
+              <p class="eyebrow">Paper-style Diagram</p>
+              <h3>完整節點與管道</h3>
+            </div>
+            <div class="toolbar" aria-label="Diagram controls">
+              <button type="button" data-zoom="out" title="Zoom out">−</button>
+              <button type="button" data-zoom="in" title="Zoom in">＋</button>
+              <button type="button" data-reset title="Reset view">Reset</button>
+            </div>
+          </div>
+          <div class="explorerBody">
+            <div class="diagramViewport" data-diagram-viewport>
+              <div class="diagramCanvas" data-diagram>
+                <img src="./architecture.svg" alt="SpeakIn complete architecture diagram">
+              </div>
+            </div>
+            <aside class="detailPanel" aria-live="polite">
+              <div class="languageTabs" role="tablist" aria-label="Language">
+                <button type="button" class="active" data-lang="zh">中文</button>
+                <button type="button" data-lang="en">English</button>
+              </div>
+              <div class="detailContent" data-detail></div>
+            </aside>
+          </div>
+          <div class="hotspots" aria-label="Architecture sections">
+            <button type="button" class="active" data-node-button="overview">總覽 / Overview</button>
+            <button type="button" data-node-button="speaker-devices">Speaker Devices</button>
+            <button type="button" data-node-button="livekit-room">LiveKit Room</button>
+            <button type="button" data-node-button="rtc-ingress">RTC Ingress</button>
+            <button type="button" data-node-button="vad">VAD</button>
+            <button type="button" data-node-button="stt-worker">STT Worker</button>
+            <button type="button" data-node-button="event-bus">Event Bus</button>
+            <button type="button" data-node-button="mt-worker">MT Worker</button>
+            <button type="button" data-node-button="tts-worker">TTS Worker</button>
+            <button type="button" data-node-button="viewer">Viewer</button>
+            <button type="button" data-node-button="session-manager">Session Manager</button>
+          </div>
+        </section>
+        <div class="treeWrap">
+          <pre><code>allen-speakin/
+├── schemas/              事件 schema 單一事實來源
+├── core/
+│   ├── bus/              NATS 封裝
+│   ├── rtc/              LiveKit SDK 封裝
+│   ├── stage/            stage 基底與載入器
+│   └── observability/    trace 與 metrics
+├── stages/
+│   ├── stt_whisperlive/  串流 STT
+│   ├── mt_vllm/          翻譯 stage
+│   └── tts_cosyvoice2/   串流 TTS
+├── pipelines/            YAML 拓撲
+├── services/
+│   ├── runner/           管線執行器
+│   ├── gateway/          REST / WS / token
+│   └── session_manager/  control plane
+├── frontend/             viewer / audience / stage display
+├── deploy/               dev / staging / prod
+├── tests/                unit / replay / load
+├── 結構及技術棧.md
+└── 代辦.md</code></pre>
+        </div>
+      </section>
+
+      <section id="todo">
+        <div class="sectionHead">
+          <p class="eyebrow">Next</p>
+          <h2>優先代辦</h2>
+        </div>
+        <div class="todoList">
+          <article><span>P0</span><strong>LiveKit mic → STT ingress</strong><p>讓真實講者音軌進入 STT worker，完成雙裝置對講地基。</p></article>
+          <article><span>P0</span><strong>消除 head-of-line blocking</strong><p>NATS callback 只派工，per-speaker 保序，跨 speaker 並行。</p></article>
+          <article><span>P0</span><strong>viewer 完整閉環</strong><p>發布麥克風、選語言、訂閱字幕與 TTS 音軌。</p></article>
+          <article><span>P1</span><strong>runner 拓撲接線</strong><p>實作 `after:` 與 topic 改寫，讓插件插拔成為真能力。</p></article>
+          <article><span>P1</span><strong>JetStream durable event</strong><p>final、tts meta、control 需要 ack 與 replay。</p></article>
+          <article><span>P1</span><strong>control plane</strong><p>維護 presence、active speaker、語言訂閱與 TTS 惰性啟動。</p></article>
+        </div>
+      </section>
+    </main>
+    <script src="./site.js"></script>
+  </body>
+</html>
