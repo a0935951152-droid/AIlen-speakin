@@ -20,6 +20,12 @@ venv 在本機 NVMe（`/home/a0935951152/speakin-venv`），repo 內 `.venv` 是
 # 重播測試需要 GPU + NATS + vLLM 都在線（CI 不跑）
 .venv/bin/python -m pytest tests/replay
 
+# CI 陷阱（2026-06-12 修過,別改回去）:runner 系統 Python 受 PEP 668 保護,
+# uv pip install --system 會被拒;setup-uv 設 python-version 時已預建 .venv,
+# 要 uv venv --clear;uv run pytest 不把 CWD 加 sys.path,靠 pyproject 的
+# [tool.pytest.ini_options] pythonpath = ["."],勿刪。新增頂層 import 的依賴
+# 時記得同步 ci.yml 的安裝清單(如 numpy)。
+
 # 啟動依賴
 docker start speakin-nats              # NATS JetStream（含 -m 8222 監控埠）
 bash deploy/dev/vllm_mt.sh             # vLLM 起 breeze-7b-mt 於 :8001（見下方環境約束）
